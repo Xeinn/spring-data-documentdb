@@ -70,8 +70,8 @@ public class PersonRepositoryIT {
 
         final List<Person> allMatchResult = TestUtils.toList(repository.findByAgeGreaterThan(TestConstants.AGE_0));
         assertThat(allMatchResult.size()).isEqualTo(2);
-        assertThat(allMatchResult.get(0).getAge()).isGreaterThan(TestConstants.AGE_0);
-        assertThat(allMatchResult.get(1).getAge()).isGreaterThan(TestConstants.AGE_0);
+        assertThat(result.get(0).getAge()).isGreaterThan(TestConstants.AGE_0);
+        assertThat(result.get(1).getAge()).isGreaterThan(TestConstants.AGE_0);
     }
 
 }
