@@ -9,6 +9,7 @@ public enum CriteriaType {
     AND_CONDITION,
     OR_CONDITION,
     IS_EQUAL,
+    IS_NOT_EQUAL,
     IS_LESS_THAN,
     IS_LESS_THAN_OR_EQUAL,
     IS_GREATER_THAN,
@@ -19,10 +20,14 @@ public enum CriteriaType {
     ENDING_WITH,
     EXISTS,
     IS_EMPTY,
+    IS_NOT_EMPTY,
     IS_NULL,
+    IS_NOT_NULL,
     LIKE,
+    NOT_LIKE,
     NEAR,
     REGEX,
     STARTING_WITH,
-    IN
+    IN,
+    NOT_IN
 }
