@@ -5,44 +5,30 @@
  */
 package com.microsoft.azure.spring.data.documentdb.core.query;
 
-import com.microsoft.azure.spring.data.documentdb.exception.IllegalQueryException;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import org.springframework.data.domain.Sort;
 
 public class Query {
 
-    private final Map<String, Object> criteria = new LinkedHashMap<>();
-
-    public static Query query(Criteria criteria) {
-        return new Query(criteria);
-    }
+    Criteria criteria;
+    Sort sort;
 
     public Query() {
+        
+        this.criteria = null;
+        this.sort = null;
+    }
+    
+    public Query(Criteria criteria, Sort sort) {
+        
+        this.criteria = criteria;
+        this.sort = sort;
     }
 
-    public Query(Criteria criteria) {
-        final List<Criteria> criteriaList = criteria.getCriteriaChain();
-        for (final Criteria c : criteriaList) {
-            addCriteria(c);
-        }
+    public Criteria getCriteria() {
+        return criteria;
     }
 
-    public Query addCriteria(CriteriaDefinition criteriaDefinition) {
-        final Object existing = this.criteria.get(criteriaDefinition.getKey());
-
-        if (existing == null) {
-            this.criteria.put(criteriaDefinition.getKey(), criteriaDefinition.getCriteriaObject());
-        } else {
-            throw new IllegalQueryException("invalid criteriaDefinition, criteria already exists.");
-        }
-        return this;
-    }
-
-    public Map<String, Object> getCriteria() {
-        return this.criteria;
+    public Sort getSort() {
+        return sort;
     }
 }
-
-

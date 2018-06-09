@@ -45,12 +45,12 @@ public class CriteriaWriter {
         
     }
     
-    public CriteriaWriter(NewCriteria criteria, String idFieldName) {
+    public CriteriaWriter(Criteria criteria, String idFieldName) {
 
         parseCriteria(criteria, idFieldName);
     }
 
-    public void parseCriteria(NewCriteria criteria, String entityClassIdFieldName) {
+    public void parseCriteria(Criteria criteria, String entityClassIdFieldName) {
         
         this.entityClassIdFieldName = entityClassIdFieldName;
         
@@ -69,7 +69,7 @@ public class CriteriaWriter {
         return parameterMap;
     }
     
-    private String buildCriteriaString(NewCriteria criteria) {
+    private String buildCriteriaString(Criteria criteria) {
         
         switch(criteria.getCriteriaType()) {
         
@@ -127,7 +127,7 @@ public class CriteriaWriter {
         throw new IllegalArgumentException("Unsupported condition");
     }
     
-    private String processTemplate(String template, NewCriteria criteria, List<?> values) {
+    private String processTemplate(String template, Criteria criteria, List<?> values) {
 
         String workingTemplate = template;
         
@@ -144,18 +144,22 @@ public class CriteriaWriter {
                 criteria.getCriteriaSubject() != null && 
                         criteria.getCriteriaSubject()
                             .equals(entityClassIdFieldName) ? "id" : criteria.getCriteriaSubject());
-        
-        while (workingTemplate.indexOf("@@") != -1) {
+
+        int valuesIndex = 0;
+
+        while (workingTemplate.indexOf("@@") != -1 && valuesIndex < values.size()) {
 
             final int parameterIndex = parameterMap.size();
             final String parameterName = "@p" + (parameterIndex + 1);
 
             workingTemplate = workingTemplate.replaceFirst("@@", parameterName);
 
-            parameterMap.put(parameterName, values.get(parameterIndex));
+            parameterMap.put(parameterName, values.get(valuesIndex));
+            
+            ++valuesIndex;
         }
         
-        if (parameterMap.size() != values.size()) {
+        if (workingTemplate.indexOf("@@") != -1 || valuesIndex < values.size()) {
             
             throw new IllegalArgumentException(
                     "incorrect number of values for " + criteria.getCriteriaType() + " operation ");

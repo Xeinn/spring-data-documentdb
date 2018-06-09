@@ -106,6 +106,8 @@ public class TestConstants {
     public static final String NEW_MESSAGE = "new test message";
 
     public static final String CRITERIA_KEY = "CriteriaTestKey";
+    public static final String CRITERIA_FIELD = "CriteriaTestField";
+    public static final String CRITERIA_VALUE = "CriteriaTestValue";
     public static final String CRITERIA_OBJECT = "CriteriaTestObject";
 
     public static final String DOCUMENTDB_FAKE_HOST = "https://fakeuri";

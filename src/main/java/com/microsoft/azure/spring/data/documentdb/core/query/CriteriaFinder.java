@@ -10,12 +10,12 @@ import java.util.List;
 
 public class CriteriaFinder {
 
-    private final List<NewCriteria> matchedCriteria = new ArrayList<>();
+    private final List<Criteria> matchedCriteria = new ArrayList<>();
     
-    CriteriaFinder() {
+    public CriteriaFinder() {
     }
     
-    public List<NewCriteria> findCriteria(NewCriteria criteria, String fieldName) {
+    public List<Criteria> findCriteria(Criteria criteria, String fieldName) {
 
         matchedCriteria.clear();
         
@@ -24,13 +24,13 @@ public class CriteriaFinder {
         return matchedCriteria;
     }
 
-    private void searchCriteria(NewCriteria criteria, String fieldName) {
+    private void searchCriteria(Criteria criteria, String fieldName) {
         
         if (criteria.getCriteriaSubject() != null && criteria.getCriteriaSubject().equals(fieldName)) {
             matchedCriteria.add(criteria);
         }
         
-        for (final NewCriteria val : criteria.getCriteriaList()) {
+        for (final Criteria val : criteria.getCriteriaList()) {
             
             searchCriteria(val, fieldName);
         }

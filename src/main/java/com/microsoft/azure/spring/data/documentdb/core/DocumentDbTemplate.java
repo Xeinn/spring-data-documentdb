@@ -10,6 +10,9 @@ import com.microsoft.azure.documentdb.*;
 import com.microsoft.azure.documentdb.internal.HttpConstants;
 import com.microsoft.azure.spring.data.documentdb.DocumentDbFactory;
 import com.microsoft.azure.spring.data.documentdb.core.convert.MappingDocumentDbConverter;
+import com.microsoft.azure.spring.data.documentdb.core.query.Criteria;
+import com.microsoft.azure.spring.data.documentdb.core.query.CriteriaFinder;
+import com.microsoft.azure.spring.data.documentdb.core.query.CriteriaWriter;
 import com.microsoft.azure.spring.data.documentdb.core.query.Query;
 import com.microsoft.azure.spring.data.documentdb.exception.DatabaseCreationException;
 import com.microsoft.azure.spring.data.documentdb.exception.DocumentDBAccessException;
@@ -446,37 +449,23 @@ public class DocumentDbTemplate implements DocumentDbOperations, ApplicationCont
     }
 
     private <T> SqlQuerySpec createSqlQuerySpec(Query query, Class<T> entityClass) {
+
         String queryStr = "SELECT * FROM ROOT r WHERE ";
 
         final SqlParameterCollection parameterCollection = new SqlParameterCollection();
 
-        for (final Map.Entry<String, Object> entry : query.getCriteria().entrySet()) {
-            if (queryStr.contains("=@")) {
-                queryStr += " AND ";
-            }
+        final CriteriaWriter writer = new CriteriaWriter(query.getCriteria(),
+                new DocumentDbEntityInformation(entityClass).getId().getName());
+        
+        queryStr += writer.getCriteriaAsString();
+        
+        for (final Map.Entry<String, Object> entry : writer.getParameters().entrySet()) {
 
-            String fieldName = entry.getKey();
-            if (isIdField(fieldName, entityClass)) {
-                fieldName = "id";
-            }
-
-            queryStr += "r." + fieldName + "=@" + entry.getKey();
-
-            parameterCollection.add(new SqlParameter("@" + entry.getKey(),
+            parameterCollection.add(new SqlParameter(entry.getKey(),
                     mappingDocumentDbConverter.mapToDocumentDBValue(entry.getValue())));
         }
 
         return new SqlQuerySpec(queryStr, parameterCollection);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> boolean isIdField(String fieldName, Class<T> entityClass) {
-        if (StringUtils.isEmpty(fieldName)) {
-            return false;
-        }
-
-        final DocumentDbEntityInformation entityInfo = new DocumentDbEntityInformation(entityClass);
-        return fieldName.equals(entityInfo.getId().getName());
     }
 
     @Override
@@ -522,25 +511,26 @@ public class DocumentDbTemplate implements DocumentDbOperations, ApplicationCont
     }
 
     private <T> Optional<Object> getPartitionKeyValue(Query query, Class<T> domainClass) {
+
         if (query == null) {
             return Optional.empty();
         }
 
         final Optional<String> partitionKeyName = getPartitionKeyField(domainClass);
+
         if (!partitionKeyName.isPresent()) {
             return Optional.empty();
         }
 
-        final Map<String, Object> criteria = query.getCriteria();
-        // TODO (wepa) Only one partition key value is supported now
-        final Optional<String> matchedKey = criteria.keySet().stream()
-                .filter(key -> partitionKeyName.get().equals(key)).findFirst();
+        final CriteriaFinder finder = new CriteriaFinder();
 
-        if (!matchedKey.isPresent()) {
+        final List<Criteria> matched = finder.findCriteria(query.getCriteria(), partitionKeyName.get());
+        
+        if (matched.size() != 1 || matched.get(0).getCriteriaValues().size() != 1) {
             return Optional.empty();
         }
 
-        return Optional.of(criteria.get(matchedKey.get()));
+        return Optional.of(matched.get(0).getCriteriaValues().get(0));
     }
 
     @SuppressWarnings("unchecked")
